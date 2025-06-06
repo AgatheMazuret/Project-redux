@@ -1,0 +1,8 @@
+packages:
+  - backend
+  - frontend
+ignoredBuiltDependencies:
+  - bcrypt
+  - esbuild
+onlyBuiltDependencies:
+  - '@scarf/scarf'
