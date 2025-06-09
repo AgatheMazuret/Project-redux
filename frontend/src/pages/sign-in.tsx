@@ -5,6 +5,16 @@ import { useDispatch, useSelector } from "react-redux";
 import { RootState, AppDispatch } from "../redux/store";
 import { login } from "../redux/auth-actions";
 
+// Déclaration du composant SignInPage
+
+// Déclaration des états locaux pour le formulaire (email, password, rememberMe, errorMessage)
+// Initialisation du dispatch Redux
+// Initialisation du hook de navigation (useNavigate)
+
+// Définition de la fonction handleSubmit pour gérer la soumission du formulaire
+//   - Empêcher le comportement par défaut
+//   - Déclencher l'action de connexion (login)
+//   - Gérer les erreurs éventuelles
 
   return (
     <div>

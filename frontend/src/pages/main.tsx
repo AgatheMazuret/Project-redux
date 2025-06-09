@@ -3,6 +3,14 @@ import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "../redux/store";
 import { logoutUser } from "../redux/auth-reducer";
 
+// Déclaration du composant principal (Main ou HomePage)
+
+// Récupération des états globaux via useSelector (ex : authentification, utilisateur)
+// Initialisation du dispatch Redux
+// Initialisation du hook de navigation (useNavigate)
+
+// Définition des fonctions utilitaires (ex : handleSignOut pour la déconnexion)
+
 
   return (
     <div>

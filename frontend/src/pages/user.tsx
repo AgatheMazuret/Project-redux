@@ -6,6 +6,21 @@ import { RootState, AppDispatch } from "../redux/store";
 import { logoutUser } from "../redux/auth-reducer"; // adapte selon tes exports
 import { updateUserProfileThunk } from "../api/api";
 
+// Déclaration du composant UserHomePage
+
+// Déclaration des états locaux pour :
+//   - Gestion du menu déroulant utilisateur (dropdown)
+//   - Gestion du mode édition du nom
+//   - Champs pour modifier prénom/nom
+
+// Initialisation du dispatch Redux
+// Initialisation du hook de navigation (useNavigate)
+// Récupération des informations utilisateur depuis le store Redux
+
+// Définition des fonctions utilitaires :
+//   - handleSignOut pour la déconnexion
+//   - handleSubmit pour la modification du profil utilisateur
+//   - Gestion de l'ouverture/fermeture du dropdown (et du clic extérieur)
 
   return (
     <div>
