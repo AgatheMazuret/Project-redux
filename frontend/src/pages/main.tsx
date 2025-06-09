@@ -4,13 +4,16 @@ import { RootState } from "../redux/store";
 import { logoutUser } from "../redux/auth-reducer";
 
 // Déclaration du composant principal (Main ou HomePage)
+const Main = () => {
+  const isLoggedIn = useSelector((state: RootState) => state.auth.isLoggedIn);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
 
-// Récupération des états globaux via useSelector (ex : authentification, utilisateur)
-// Initialisation du dispatch Redux
-// Initialisation du hook de navigation (useNavigate)
-
-// Définition des fonctions utilitaires (ex : handleSignOut pour la déconnexion)
-
+  // Fonction de déconnexion
+  const handleSignOut = () => {
+    dispatch(logoutUser());
+    navigate("/sign-in");
+  };
 
   return (
     <div>

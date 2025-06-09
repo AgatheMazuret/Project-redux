@@ -1,15 +1,72 @@
+// Importation des fonctions nécessaires de Redux Toolkit et des actions personnalisées
 import { createSlice } from "@reduxjs/toolkit";
 import { login } from "./auth-actions";
 import { User } from "../types";
 
-// Définition de l’état initial (initialState) :
-//   - Informations utilisateur (user, token, etc.)
-//   - Statut de connexion (isLoggedIn, loading, error, etc.)
+// Définition du type de l'état d'authentification
+export type AuthState = {
+  user: User | null;
+  token: string | null;
+  isLoggedIn: boolean;
+  loading: boolean; // Indique si une requête est en cours
+  error: string | null; // Message d'erreur éventuel
+};
 
-// Création du slice d’authentification avec createSlice :
-//   - Définition du nom du slice
-//   - Définition de l’état initial
-//   - Définition des reducers synchrones (ex : logoutUser)
-//   - Définition des extraReducers pour gérer les actions asynchrones (login, fetchUserProfile, etc.)
+// État initial de l'authentification
+const initialState: AuthState = {
+  user: null,
+  token: null,
+  isLoggedIn: false,
+  loading: false,
+  error: null,
+};
 
-// Export des actions et du reducer pour utilisation dans le store
+// Création du slice d'authentification avec reducers synchrones et asynchrones
+export const authSlice = createSlice({
+  name: "auth", // Nom du slice
+  initialState, // État initial
+  reducers: {
+    // Action synchrone pour déconnecter l'utilisateur
+    logoutUser: (state) => {
+      state.user = null;
+      state.token = null;
+      state.isLoggedIn = false;
+      state.loading = false;
+      state.error = null;
+    },
+  },
+  // Gestion des actions asynchrones (extraReducers)
+  extraReducers: (builder) => {
+    builder
+      // Gestion de l'état lors de la tentative de connexion
+      .addCase(login.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      // Gestion de l'état lors d'une connexion réussie
+      .addCase(login.fulfilled, (state, action) => {
+        state.user = action.payload.user;
+        state.token = action.payload.token;
+        state.isLoggedIn = true;
+        state.loading = false;
+      })
+      // Gestion de l'état lors d'un échec de connexion
+      .addCase(login.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      });
+  },
+});
+
+// Export des actions pour pouvoir les utiliser dans les composants
+export const { logoutUser } = authSlice.actions;
+
+// Export du reducer pour l'intégrer dans le store Redux
+export default authSlice.reducer;
+
+// Sélecteurs pour accéder facilement à l'état d'authentification
+export const selectAuth = (state: { auth: AuthState }) => state.auth;
+export const selectIsLoggedIn = (state: { auth: AuthState }) => state.auth.isLoggedIn;
+export const selectAuthUser = (state: { auth: AuthState }) => state.auth.user;
+export const selectAuthError = (state: { auth: AuthState }) => state.auth.error;
+export const selectAuthLoading = (state: { auth: AuthState }) => state.auth.loading;
