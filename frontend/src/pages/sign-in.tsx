@@ -1,33 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import "../../style.css";
+import "../index.css";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState, AppDispatch } from "../redux/store";
 import { login } from "../redux/auth-actions";
 
-const SignInPage = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [rememberMe, setRememberMe] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
-  const navigate = useNavigate();
-  const dispatch = useDispatch<AppDispatch>();
-  const authError = useSelector((state: RootState) => state.auth.error);
-  const authStatus = useSelector((state: RootState) => state.auth.status);
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    dispatch(login({ email, password, rememberMe }));
-  };
-
-  useEffect(() => {
-    if (authStatus === "succeeded") {
-      navigate("/");
-    }
-    if (authError) {
-      setErrorMessage(authError);
-    }
-  }, [authStatus, authError, navigate]);
 
   return (
     <div>

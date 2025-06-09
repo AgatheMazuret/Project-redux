@@ -1,21 +1,8 @@
-import "../../style.css";
 import { Link, useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "../redux/store";
 import { logoutUser } from "../redux/auth-reducer";
 
-const Main = () => {
-  const navigate = useNavigate();
-  // Permet d'envoyer des actions Redux
-  const dispatch = useDispatch();
-  // Récupère depuis le store Redux si l'utilisateur est connecté
-  const isLoggedIn = useSelector((state: RootState) => state.auth.isLoggedIn);
-
-  // Fonction déclenchée lorsqu'on veut se déconnecter
-  const handleSignOut = () => {
-    dispatch(logoutUser());
-    navigate("/sign-in");
-  };
 
   return (
     <div>
