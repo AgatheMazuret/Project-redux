@@ -3,24 +3,71 @@ import { Link, useNavigate } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState, AppDispatch } from "../redux/store";
-import { logoutUser } from "../redux/auth-reducer"; // adapte selon tes exports
-import { updateUserProfileThunk } from "../api/api";
+import { logoutUser } from "../redux/auth-reducer";
+import { authActions } from "../redux/auth-actions";
 
-// Déclaration du composant UserHomePage
+const UserHomePage = () => {
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const user = useSelector((state: RootState) => state.auth.user);
+  const firstName = user?.firstName || "";
+  const lastName = user?.lastName || "";
+  const email = user?.email || "";
+  const [editFirstName, setEditFirstName] = useState(firstName);
+  const [editLastName, setEditLastName] = useState(lastName);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const dispatch = useDispatch<AppDispatch>();
+  const navigate = useNavigate();
+  const isLoggedIn = useSelector((state: RootState) => state.auth.isLoggedIn);
 
-// Déclaration des états locaux pour :
-//   - Gestion du menu déroulant utilisateur (dropdown)
-//   - Gestion du mode édition du nom
-//   - Champs pour modifier prénom/nom
+  useEffect(() => {
+    if (!isLoggedIn) {
+      navigate("/sign-in");
+    } else {
+      dispatch(authActions.fetchUserProfile());
+    }
+  }, [isLoggedIn, navigate, dispatch]);
 
-// Initialisation du dispatch Redux
-// Initialisation du hook de navigation (useNavigate)
-// Récupération des informations utilisateur depuis le store Redux
+  useEffect(() => {
+    if (isEditing) {
+      setEditFirstName(firstName);
+      setEditLastName(lastName);
+    }
+  }, [isEditing, firstName, lastName]);
 
-// Définition des fonctions utilitaires :
-//   - handleSignOut pour la déconnexion
-//   - handleSubmit pour la modification du profil utilisateur
-//   - Gestion de l'ouverture/fermeture du dropdown (et du clic extérieur)
+  const handleSignOut = () => {
+    dispatch(logoutUser());
+    navigate("/sign-in");
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editFirstName.trim() || !editLastName.trim()) return;
+    try {
+      await dispatch(
+        authActions.updateUserProfile({
+          firstName: editFirstName.trim(),
+          lastName: editLastName.trim(),
+        })
+      ).unwrap();
+      setIsEditing(false);
+    } catch {
+      alert("Erreur lors de la mise à jour du profil");
+    }
+  };
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   return (
     <div>
@@ -36,7 +83,7 @@ import { updateUserProfileThunk } from "../api/api";
         <div>
           <div
             className="main-nav-item user-dropdown"
-            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+            onClick={() => setIsDropdownOpen((open) => !open)}
             ref={dropdownRef}
           >
             <i className="fa fa-user-circle"></i>
@@ -55,10 +102,9 @@ import { updateUserProfileThunk } from "../api/api";
               </div>
             )}
           </div>
-          <Link to="/" className="sign-out-button" onClick={handleSignOut}>
-            <i className="fa fa-sign-out"></i>
-            Sign out
-          </Link>
+          <button className="sign-out-button" onClick={handleSignOut}>
+            <i className="fa fa-sign-out"></i> Sign out
+          </button>
         </div>
       </nav>
 
@@ -69,15 +115,15 @@ import { updateUserProfileThunk } from "../api/api";
             <br />
             {firstName} {lastName}!
           </h1>
-
           {isEditing ? (
-            <form onSubmit={handleSubmit}>
+            <form onSubmit={handleSubmit} className="edit-form">
               <input
                 name="firstName"
                 type="text"
                 placeholder="John"
                 value={editFirstName}
                 onChange={(e) => setEditFirstName(e.target.value)}
+                autoFocus
               />
               <input
                 name="lastName"
@@ -105,39 +151,34 @@ import { updateUserProfileThunk } from "../api/api";
         </div>
 
         <h2 className="sr-only">Accounts</h2>
-
-        <section className="account">
-          <div className="account-content-wrapper">
-            <h3 className="account-title">Argent Bank Checking (x8349)</h3>
-            <p className="account-amount">$2,082.79</p>
-            <p className="account-amount-description">Available Balance</p>
-          </div>
-          <div className="account-content-wrapper cta">
-            <button className="transaction-button">View transactions</button>
-          </div>
-        </section>
-
-        <section className="account">
-          <div className="account-content-wrapper">
-            <h3 className="account-title">Argent Bank Savings (x6712)</h3>
-            <p className="account-amount">$10,928.42</p>
-            <p className="account-amount-description">Available Balance</p>
-          </div>
-          <div className="account-content-wrapper cta">
-            <button className="transaction-button">View transactions</button>
-          </div>
-        </section>
-
-        <section className="account">
-          <div className="account-content-wrapper">
-            <h3 className="account-title">Argent Bank Credit Card (x8349)</h3>
-            <p className="account-amount">$184.30</p>
-            <p className="account-amount-description">Current Balance</p>
-          </div>
-          <div className="account-content-wrapper cta">
-            <button className="transaction-button">View transactions</button>
-          </div>
-        </section>
+        {[
+          {
+            title: "Argent Bank Checking (x8349)",
+            amount: "$2,082.79",
+            desc: "Available Balance",
+          },
+          {
+            title: "Argent Bank Savings (x6712)",
+            amount: "$10,928.42",
+            desc: "Available Balance",
+          },
+          {
+            title: "Argent Bank Credit Card (x8349)",
+            amount: "$184.30",
+            desc: "Current Balance",
+          },
+        ].map((acc, idx) => (
+          <section className="account" key={idx}>
+            <div className="account-content-wrapper">
+              <h3 className="account-title">{acc.title}</h3>
+              <p className="account-amount">{acc.amount}</p>
+              <p className="account-amount-description">{acc.desc}</p>
+            </div>
+            <div className="account-content-wrapper cta">
+              <button className="transaction-button">View transactions</button>
+            </div>
+          </section>
+        ))}
       </main>
 
       <footer className="footer">

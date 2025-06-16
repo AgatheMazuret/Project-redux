@@ -1,20 +1,40 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "../index.css";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState, AppDispatch } from "../redux/store";
 import { login } from "../redux/auth-actions";
 
-// Déclaration du composant SignInPage
+const SignInPage = () => {
+  // États pour le formulaire de connexion
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [rememberMe, setRememberMe] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const dispatch = useDispatch<AppDispatch>();
+  const navigate = useNavigate();
+  const isLoggedIn = useSelector((state: RootState) => state.auth.isLoggedIn);
 
-// Déclaration des états locaux pour le formulaire (email, password, rememberMe, errorMessage)
-// Initialisation du dispatch Redux
-// Initialisation du hook de navigation (useNavigate)
+  // Redirige l'utilisateur connecté vers la page utilisateur
+  React.useEffect(() => {
+    if (isLoggedIn) {
+      navigate("/user");
+    }
+  }, [isLoggedIn, navigate]);
 
-// Définition de la fonction handleSubmit pour gérer la soumission du formulaire
-//   - Empêcher le comportement par défaut
-//   - Déclencher l'action de connexion (login)
-//   - Gérer les erreurs éventuelles
+  // Gère la soumission du formulaire de connexion
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrorMessage("");
+    try {
+      await dispatch(login({ email, password })).unwrap();
+      // Si la connexion réussit, la redirection est gérée par useEffect
+    } catch (error) {
+      setErrorMessage(
+        (error as Error)?.message || "Erreur lors de la connexion"
+      );
+    }
+  };
 
   return (
     <div>
@@ -61,6 +81,7 @@ import { login } from "../redux/auth-actions";
               />
               <label htmlFor="remember-me">Remember me</label>
             </div>
+            {/* Affiche un message d'erreur en cas d'échec de connexion */}
             {errorMessage && (
               <p className="error-message" style={{ color: "red" }}>
                 {errorMessage}

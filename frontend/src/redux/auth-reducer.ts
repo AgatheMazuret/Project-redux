@@ -1,6 +1,6 @@
 // Importation des fonctions nécessaires de Redux Toolkit et des actions personnalisées
 import { createSlice } from "@reduxjs/toolkit";
-import { login } from "./auth-actions";
+import { login, fetchUserProfile, updateUserProfile } from "./auth-actions";
 import { User } from "../types";
 
 // Définition du type de l'état d'authentification
@@ -52,6 +52,34 @@ export const authSlice = createSlice({
       })
       // Gestion de l'état lors d'un échec de connexion
       .addCase(login.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      // Gestion de l'état lors de la récupération du profil utilisateur
+      .addCase(fetchUserProfile.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchUserProfile.fulfilled, (state, action) => {
+        state.user = action.payload;
+        state.loading = false;
+        state.error = null;
+      })
+      .addCase(fetchUserProfile.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      // Gestion de l'état lors de la mise à jour du profil utilisateur
+      .addCase(updateUserProfile.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(updateUserProfile.fulfilled, (state, action) => {
+        state.user = { ...state.user, ...action.payload };
+        state.loading = false;
+        state.error = null;
+      })
+      .addCase(updateUserProfile.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       });

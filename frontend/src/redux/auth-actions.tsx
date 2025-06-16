@@ -1,7 +1,6 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
-
-// Définition des actions asynchrones (thunks) pour l’authentification:
-//   - login : envoie les identifiants à l’API, récupère le token, gère les erreurs
+const apiUrl = "http://localhost:3001/api/v1/user";
+// Thunk pour la connexion utilisateur (login)
 const login = createAsyncThunk(
   "auth/login",
   async (
@@ -9,11 +8,11 @@ const login = createAsyncThunk(
     { rejectWithValue }
   ) => {
     try {
-      const response = await fetch("http://localhost:3001/api/v1/user/login", {
+      const response = await fetch(`${apiUrl}/login`, {
         method: "POST",
         headers: {
           "content-type": "application/json",
-          accept: "application.json",
+          accept: "application/json",
         },
         body: JSON.stringify({
           email: Credentials.email,
@@ -25,11 +24,11 @@ const login = createAsyncThunk(
         throw new Error(errorData.message || "Login failed");
       }
       const data = await response.json();
-      // Stockage du token dans le localStorage
+      // Stocke le token dans le localStorage pour les requêtes futures
       localStorage.setItem("token", data.body.token);
-      return data.body;
+      return { token: data.body.token, user: data.body.user };
     } catch (error) {
-      // Gestion des erreurs
+      // Gestion des erreurs d'authentification
       if (error instanceof Error) {
         return rejectWithValue(error.message);
       } else {
@@ -40,35 +39,29 @@ const login = createAsyncThunk(
 );
 export { login };
 
-//   - logout : efface le token, réinitialise l’état utilisateur
-
+// Thunk pour la déconnexion utilisateur (logout)
 const logout = createAsyncThunk("auth/logout", async () => {
-  // Efface le token du localStorage
-  localStorage.removeItem("token");
-  // Retourne une valeur vide pour indiquer la réussite de l'action
+  localStorage.removeItem("token"); // Supprime le token du localStorage
   return;
 });
 export { logout };
 
-//   - fetchUserProfile : récupère les infos utilisateur après connexion
-
+// Thunk pour récupérer le profil utilisateur après connexion
 const fetchUserProfile = createAsyncThunk(
   "auth/fetchUserProfile",
   async (_, { rejectWithValue }) => {
     try {
       const token = localStorage.getItem("token");
       if (!token) throw new Error("No token found");
-      const response = await fetch(
-        "http://localhost:3001/api/v1/user/profile",
-        {
-          method: "GET",
-          headers: {
-            "content-type": "application/json",
-            accept: "application/json",
-            authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const response = await fetch(`${apiUrl}/profile`, {
+        method: "POST", // POST pour correspondre au backend
+        headers: {
+          "content-type": "application/json",
+          accept: "application/json",
+          authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({}),
+      });
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.message || "Failed to fetch user profile");
@@ -76,6 +69,7 @@ const fetchUserProfile = createAsyncThunk(
       const data = await response.json();
       return data.body;
     } catch (error) {
+      // Gestion des erreurs de récupération du profil
       if (error instanceof Error) {
         return rejectWithValue(error.message);
       } else {
@@ -86,32 +80,28 @@ const fetchUserProfile = createAsyncThunk(
 );
 export { fetchUserProfile };
 
-//   - updateUserProfile : met à jour les infos utilisateur
-
+// Thunk pour mettre à jour le profil utilisateur (prénom/nom)
 const updateUserProfile = createAsyncThunk(
   "auth/updateUserProfile",
   async (
-    userData: { firstName: string; lastname: string },
+    userData: { firstName: string; lastName: string },
     { rejectWithValue }
   ) => {
     try {
       const token = localStorage.getItem("token");
       if (!token) throw new Error("No token found");
-      const response = await fetch(
-        "http://localhost:3001/api/v1/user/profile",
-        {
-          method: "PUT",
-          headers: {
-            "content-type": "application/json",
-            accept: "application/json",
-            authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            firstName: userData.firstName,
-            lastName: userData.lastname,
-          }),
-        }
-      );
+      const response = await fetch(`${apiUrl}/profile`, {
+        method: "PUT",
+        headers: {
+          "content-type": "application/json",
+          accept: "application/json",
+          authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          firstName: userData.firstName,
+          lastName: userData.lastName,
+        }),
+      });
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.message || "Failed to update user profile");
@@ -119,6 +109,7 @@ const updateUserProfile = createAsyncThunk(
       const data = await response.json();
       return data.body;
     } catch (error) {
+      // Gestion des erreurs de mise à jour du profil
       if (error instanceof Error) {
         return rejectWithValue(error.message);
       } else {
@@ -129,7 +120,7 @@ const updateUserProfile = createAsyncThunk(
 );
 export { updateUserProfile };
 
-// Export des actions pour utilisation dans les composants ou reducers
+// Export groupé des actions pour une importation simplifiée
 export const authActions = {
   login,
   logout,
