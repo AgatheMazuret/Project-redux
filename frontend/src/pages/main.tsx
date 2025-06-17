@@ -3,13 +3,13 @@ import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "../redux/store";
 import { logoutUser } from "../redux/auth-reducer";
 
-// Déclaration du composant principal (Main ou HomePage)
 const Main = () => {
+  // Récupère l'état de connexion de l'utilisateur depuis le store Redux
   const isLoggedIn = useSelector((state: RootState) => state.auth.isLoggedIn);
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  // Fonction de déconnexion
+  // Déclenche la déconnexion et redirige vers la page de connexion
   const handleSignOut = () => {
     dispatch(logoutUser());
     navigate("/sign-in");
@@ -18,7 +18,6 @@ const Main = () => {
   return (
     <div>
       <header className="main-nav">
-        {/* Lien vers la page d'accueil */}
         <Link className="main-nav-logo" to="/">
           <img
             className="main-nav-logo-image"
@@ -28,19 +27,18 @@ const Main = () => {
             height="50"
           />
 
-          {/* Texte pour l'accessibilité (lecture par les lecteurs d'écran) */}
           <h1 className="sr-only">Argent Bank</h1>
         </Link>
 
         <div>
-          {/* Si l'utilisateur est connecté, on montre l'option de déconnexion */}
           {isLoggedIn ? (
+            // Affiche le bouton de déconnexion si l'utilisateur est connecté
             <Link className="main-nav-item" to="/" onClick={handleSignOut}>
               <i className="fa fa-user-circle"></i>
               Sign Out
             </Link>
           ) : (
-            // Si l'utilisateur n'est pas connecté, on montre l'option de connexion
+            // Affiche le bouton de connexion si l'utilisateur n'est pas connecté
             <Link className="main-nav-item" to="/sign-in">
               <i className="fa fa-user-circle"></i>
               Sign In

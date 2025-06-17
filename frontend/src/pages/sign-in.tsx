@@ -6,29 +6,32 @@ import { RootState, AppDispatch } from "../redux/store";
 import { login } from "../redux/auth-actions";
 
 const SignInPage = () => {
-  // États pour le formulaire de connexion
+  // États contrôlant les champs du formulaire de connexion
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  // Permet de dispatcher des actions Redux typées
   const dispatch = useDispatch<AppDispatch>();
+  // Permet de naviguer entre les pages
   const navigate = useNavigate();
+  // Récupère l'état de connexion de l'utilisateur depuis le store
   const isLoggedIn = useSelector((state: RootState) => state.auth.isLoggedIn);
 
-  // Redirige l'utilisateur connecté vers la page utilisateur
+  // Si l'utilisateur est déjà connecté, il est redirigé automatiquement vers la page utilisateur
   React.useEffect(() => {
     if (isLoggedIn) {
       navigate("/user");
     }
   }, [isLoggedIn, navigate]);
 
-  // Gère la soumission du formulaire de connexion
+  // Soumission du formulaire de connexion : tente de se connecter et gère les erreurs éventuelles
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage("");
     try {
       await dispatch(login({ email, password })).unwrap();
-      // Si la connexion réussit, la redirection est gérée par useEffect
+      // La redirection est gérée dans le useEffect ci-dessus
     } catch (error) {
       setErrorMessage(
         (error as Error)?.message || "Erreur lors de la connexion"
@@ -81,7 +84,6 @@ const SignInPage = () => {
               />
               <label htmlFor="remember-me">Remember me</label>
             </div>
-            {/* Affiche un message d'erreur en cas d'échec de connexion */}
             {errorMessage && (
               <p className="error-message" style={{ color: "red" }}>
                 {errorMessage}

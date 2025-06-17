@@ -7,19 +7,26 @@ import { logoutUser } from "../redux/auth-reducer";
 import { authActions } from "../redux/auth-actions";
 
 const UserHomePage = () => {
+  // Contrôle l'ouverture du menu déroulant utilisateur
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  // Contrôle l'affichage du formulaire d'édition du nom
   const [isEditing, setIsEditing] = useState(false);
+  // Récupère les infos utilisateur depuis le store Redux
   const user = useSelector((state: RootState) => state.auth.user);
   const firstName = user?.firstName || "";
   const lastName = user?.lastName || "";
   const email = user?.email || "";
+  // États locaux pour l'édition du nom
   const [editFirstName, setEditFirstName] = useState(firstName);
   const [editLastName, setEditLastName] = useState(lastName);
+  // Référence pour détecter les clics hors du menu déroulant
   const dropdownRef = useRef<HTMLDivElement>(null);
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
+  // Vérifie si l'utilisateur est connecté
   const isLoggedIn = useSelector((state: RootState) => state.auth.isLoggedIn);
 
+  // Redirige vers la page de connexion si l'utilisateur n'est pas connecté, sinon récupère le profil
   useEffect(() => {
     if (!isLoggedIn) {
       navigate("/sign-in");
@@ -28,6 +35,7 @@ const UserHomePage = () => {
     }
   }, [isLoggedIn, navigate, dispatch]);
 
+  // Met à jour les champs d'édition lors du passage en mode édition
   useEffect(() => {
     if (isEditing) {
       setEditFirstName(firstName);
@@ -35,11 +43,13 @@ const UserHomePage = () => {
     }
   }, [isEditing, firstName, lastName]);
 
+  // Déconnecte l'utilisateur et redirige
   const handleSignOut = () => {
     dispatch(logoutUser());
     navigate("/sign-in");
   };
 
+  // Soumission du formulaire d'édition du nom utilisateur
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editFirstName.trim() || !editLastName.trim()) return;
@@ -56,6 +66,7 @@ const UserHomePage = () => {
     }
   };
 
+  // Ferme le menu déroulant si clic en dehors
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -116,6 +127,7 @@ const UserHomePage = () => {
             {firstName} {lastName}!
           </h1>
           {isEditing ? (
+            // Formulaire d'édition du nom et prénom utilisateur
             <form onSubmit={handleSubmit} className="edit-form">
               <input
                 name="firstName"
@@ -144,6 +156,7 @@ const UserHomePage = () => {
               </button>
             </form>
           ) : (
+            // Affiche le bouton pour passer en mode édition
             <button className="edit-button" onClick={() => setIsEditing(true)}>
               Edit Name
             </button>
@@ -151,39 +164,7 @@ const UserHomePage = () => {
         </div>
 
         <h2 className="sr-only">Accounts</h2>
-        {[
-          {
-            title: "Argent Bank Checking (x8349)",
-            amount: "$2,082.79",
-            desc: "Available Balance",
-          },
-          {
-            title: "Argent Bank Savings (x6712)",
-            amount: "$10,928.42",
-            desc: "Available Balance",
-          },
-          {
-            title: "Argent Bank Credit Card (x8349)",
-            amount: "$184.30",
-            desc: "Current Balance",
-          },
-        ].map((acc, idx) => (
-          <section className="account" key={idx}>
-            <div className="account-content-wrapper">
-              <h3 className="account-title">{acc.title}</h3>
-              <p className="account-amount">{acc.amount}</p>
-              <p className="account-amount-description">{acc.desc}</p>
-            </div>
-            <div className="account-content-wrapper cta">
-              <button className="transaction-button">View transactions</button>
-            </div>
-          </section>
-        ))}
       </main>
-
-      <footer className="footer">
-        <p className="footer-text">Copyright 2020 Argent Bank</p>
-      </footer>
     </div>
   );
 };
