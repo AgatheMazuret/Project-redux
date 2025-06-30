@@ -4,6 +4,7 @@ import "../index.css";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState, AppDispatch } from "../redux/store";
 import { login } from "../redux/auth-actions";
+import { selectAuthLoading } from "../redux/auth-reducer";
 
 const SignInPage = () => {
   // États contrôlant les champs du formulaire de connexion
@@ -17,6 +18,7 @@ const SignInPage = () => {
   const navigate = useNavigate();
   // Récupère l'état de connexion de l'utilisateur depuis le store
   const isLoggedIn = useSelector((state: RootState) => state.auth.isLoggedIn);
+  const loading = useSelector(selectAuthLoading);
 
   // Si l'utilisateur est déjà connecté, il est redirigé automatiquement vers la page utilisateur
   React.useEffect(() => {
@@ -56,6 +58,14 @@ const SignInPage = () => {
         <section className="sign-in-content">
           <i className="fa fa-user-circle sign-in-icon"></i>
           <h1>Sign In</h1>
+          {loading && (
+            <div
+              className="loader"
+              style={{ textAlign: "center", margin: "1em 0" }}
+            >
+              Chargement...
+            </div>
+          )}
           <form onSubmit={handleSubmit}>
             <div className="input-wrapper">
               <label htmlFor="email">Email</label>

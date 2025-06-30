@@ -2,157 +2,354 @@ swagger: "2.0"
 info:
   title: Bank Argent API documentation
   description: Contains all available API endpoints in this codebase
-  version: "1.0.0"
+  version: "2.0.0"
   termsOfService: "http://swagger.io/terms/"
 host: localhost:3001
 basePath: /api/v1
-servers:
-  - url: http://localhost:3001/api/v1/user/login/transactions
-description: Serveur principal de l'application
+schemes:
+  - https
+  - http
+securityDefinitions:
+  Bearer:
+    type: apiKey
+    name: Authorization
+    in: header
+    description: "Token d'authentification JWT. Utiliser 'Bearer {token}'"
 
 paths:
-  /transactions:
+  /user/transactions:
     get:
-      summary: Voir les transactions du mois en cours
-      description: Affiche toutes les transactions de l'utilisateur pour le mois en cours, groupées par compte.
+      security:
+        - Bearer: []
+      tags:
+        - Transactions
+      summary: Récupérer toutes les transactions du mois en cours
+      description: Affiche toutes les transactions de l'utilisateur authentifié pour le mois en cours, groupées par compte.
+      parameters:
+        - name: month
+          in: query
+          required: false
+          type: string
+          format: date
+          description: "Mois spécifique au format YYYY-MM (par défaut : mois actuel)"
+          example: "2025-06"
+        - name: accountId
+          in: query
+          required: false
+          type: string
+          description: "ID du compte pour filtrer les transactions (optionnel)"
+          example: "compte1"
       responses:
         "200":
-          description: Liste des transactions trouvée
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/Transaction"
+          description: Liste des transactions trouvées avec succès
+          schema:
+            type: object
+            properties:
+              status:
+                type: integer
+                example: 200
+              message:
+                type: string
+                example: "Transactions récupérées avec succès"
+              body:
+                type: object
+                properties:
+                  transactions:
+                    type: array
+                    items:
+                      $ref: "#/definitions/Transaction"
+                  totalTransactions:
+                    type: integer
+                    example: 25
+                  groupedByAccount:
+                    type: object
+                    additionalProperties:
+                      type: array
+                      items:
+                        $ref: "#/definitions/Transaction"
+        "401":
+          description: Token d'authentification manquant ou invalide
+          schema:
+            $ref: "#/definitions/Error"
         "500":
-          description: Erreur du serveur
+          description: Erreur interne du serveur
+          schema:
+            $ref: "#/definitions/Error"
 
     post:
+      security:
+        - Bearer: []
+      tags:
+        - Transactions
       summary: Créer une nouvelle transaction
-      description: Permet d'ajouter une nouvelle transaction.
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/TransactionInput"
+      description: Permet d'ajouter une nouvelle transaction pour l'utilisateur authentifié.
+      parameters:
+        - name: body
+          in: body
+          required: true
+          description: Données de la nouvelle transaction
+          schema:
+            $ref: "#/definitions/TransactionInput"
       responses:
         "201":
           description: Transaction créée avec succès
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Transaction"
+          schema:
+            type: object
+            properties:
+              status:
+                type: integer
+                example: 201
+              message:
+                type: string
+                example: "Transaction créée avec succès"
+              body:
+                $ref: "#/definitions/Transaction"
         "400":
-          description: Mauvaise requête
+          description: Données d'entrée invalides
+          schema:
+            $ref: "#/definitions/Error"
+        "401":
+          description: Token d'authentification manquant ou invalide
+          schema:
+            $ref: "#/definitions/Error"
         "500":
-          description: Erreur du serveur
+          description: Erreur interne du serveur
+          schema:
+            $ref: "#/definitions/Error"
 
-  /transactions/{transactionId}:
+  /user/transactions/{transactionId}:
     get:
+      security:
+        - Bearer: []
+      tags:
+        - Transactions
       summary: Voir les détails d'une transaction
-      description: Affiche toutes les informations sur une seule transaction.
+      description: Affiche toutes les informations détaillées d'une transaction spécifique appartenant à l'utilisateur authentifié.
       parameters:
         - name: transactionId
           in: path
           required: true
-          schema:
-            type: string
-          description: L'ID de la transaction à consulter
+          type: string
+          description: L'ID unique de la transaction à consulter
+          example: "abc123def456"
       responses:
         "200":
-          description: Détails de la transaction
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Transaction"
+          description: Détails de la transaction récupérés avec succès
+          schema:
+            type: object
+            properties:
+              status:
+                type: integer
+                example: 200
+              message:
+                type: string
+                example: "Transaction trouvée avec succès"
+              body:
+                $ref: "#/definitions/Transaction"
+        "401":
+          description: Token d'authentification manquant ou invalide
+          schema:
+            $ref: "#/definitions/Error"
         "404":
           description: Transaction non trouvée
+          schema:
+            $ref: "#/definitions/Error"
+        "500":
+          description: Erreur interne du serveur
+          schema:
+            $ref: "#/definitions/Error"
 
     put:
+      security:
+        - Bearer: []
+      tags:
+        - Transactions
       summary: Modifier une transaction
-      description: Permet de modifier une transaction existante.
+      description: Permet de modifier les informations d'une transaction existante appartenant à l'utilisateur authentifié.
       parameters:
         - name: transactionId
           in: path
           required: true
+          type: string
+          description: L'ID unique de la transaction à modifier
+          example: "abc123def456"
+        - name: body
+          in: body
+          required: true
+          description: Nouvelles données de la transaction
           schema:
-            type: string
-          description: L'ID de la transaction à modifier
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/TransactionInput"
+            $ref: "#/definitions/TransactionInput"
       responses:
         "200":
-          description: Transaction mise à jour
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Transaction"
+          description: Transaction mise à jour avec succès
+          schema:
+            type: object
+            properties:
+              status:
+                type: integer
+                example: 200
+              message:
+                type: string
+                example: "Transaction mise à jour avec succès"
+              body:
+                $ref: "#/definitions/Transaction"
+        "400":
+          description: Données d'entrée invalides
+          schema:
+            $ref: "#/definitions/Error"
+        "401":
+          description: Token d'authentification manquant ou invalide
+          schema:
+            $ref: "#/definitions/Error"
         "404":
           description: Transaction non trouvée
+          schema:
+            $ref: "#/definitions/Error"
+        "500":
+          description: Erreur interne du serveur
+          schema:
+            $ref: "#/definitions/Error"
 
     delete:
+      security:
+        - Bearer: []
+      tags:
+        - Transactions
       summary: Supprimer une transaction
-      description: Permet de supprimer une transaction.
+      description: Permet de supprimer définitivement une transaction appartenant à l'utilisateur authentifié.
       parameters:
         - name: transactionId
           in: path
           required: true
-          schema:
-            type: string
-          description: L'ID de la transaction à supprimer
+          type: string
+          description: L'ID unique de la transaction à supprimer
+          example: "abc123def456"
       responses:
-        "204":
-          description: Transaction supprimée (aucun contenu retourné)
+        "200":
+          description: Transaction supprimée avec succès
+          schema:
+            type: object
+            properties:
+              status:
+                type: integer
+                example: 200
+              message:
+                type: string
+                example: "Transaction supprimée avec succès"
+        "401":
+          description: Token d'authentification manquant ou invalide
+          schema:
+            $ref: "#/definitions/Error"
         "404":
           description: Transaction non trouvée
+          schema:
+            $ref: "#/definitions/Error"
+        "500":
+          description: Erreur interne du serveur
+          schema:
+            $ref: "#/definitions/Error"
 
-components:
-  schemas:
-    Transaction:
-      type: object
-      properties:
-        transactionId:
-          type: string
-          example: "abc123"
-        date:
-          type: string
-          format: date
-          example: "2025-05-06"
-        montant:
-          type: number
-          format: float
-          example: 49.99
-        description:
-          type: string
-          example: "Achat supermarché"
-        compteId:
-          type: string
-          example: "compte1"
+definitions:
+  Transaction:
+    type: object
+    properties:
+      transactionId:
+        type: string
+        description: "Identifiant unique de la transaction"
+        example: "abc123def456"
+      date:
+        type: string
+        format: date
+        description: "Date de la transaction au format YYYY-MM-DD"
+        example: "2025-06-30"
+      montant:
+        type: number
+        format: float
+        description: "Montant de la transaction (positif pour crédit, négatif pour débit)"
+        example: -49.99
+      description:
+        type: string
+        description: "Description de la transaction"
+        example: "Achat supermarché Carrefour"
+      compteId:
+        type: string
+        description: "Identifiant du compte associé à la transaction"
+        example: "compte1"
+      categorieId:
+        type: string
+        description: "Catégorie de la transaction (optionnel)"
+        example: "alimentation"
+      notes:
+        type: string
+        description: "Notes personnelles sur la transaction (modifiable par l'utilisateur)"
+        example: "Courses hebdomadaires"
+      dateCreation:
+        type: string
+        format: date-time
+        description: "Date et heure de création de la transaction"
+        example: "2025-06-30T14:30:00Z"
+      dateModification:
+        type: string
+        format: date-time
+        description: "Date et heure de dernière modification"
+        example: "2025-06-30T15:45:00Z"
+    required:
+      - transactionId
+      - date
+      - montant
+      - description
+      - compteId
 
-    TransactionInput:
-      type: object
-      required:
-        - date
-        - montant
-        - description
-        - compteId
-      properties:
-        date:
-          type: string
-          format: date
-          example: "2025-05-06"
-        montant:
-          type: number
-          format: float
-          example: 49.99
-        description:
-          type: string
-          example: "Achat supermarché"
-        compteId:
-          type: string
-          example: "compte1"
+  TransactionInput:
+    type: object
+    properties:
+      date:
+        type: string
+        format: date
+        description: "Date de la transaction au format YYYY-MM-DD"
+        example: "2025-06-30"
+      montant:
+        type: number
+        format: float
+        description: "Montant de la transaction (positif pour crédit, négatif pour débit)"
+        example: -49.99
+      description:
+        type: string
+        description: "Description de la transaction"
+        example: "Achat supermarché Carrefour"
+      compteId:
+        type: string
+        description: "Identifiant du compte associé à la transaction"
+        example: "compte1"
+      categorieId:
+        type: string
+        description: "Catégorie de la transaction (optionnel)"
+        example: "alimentation"
+      notes:
+        type: string
+        description: "Notes personnelles sur la transaction"
+        example: "Courses hebdomadaires"
+    required:
+      - date
+      - montant
+      - description
+      - compteId
+
+  Error:
+    type: object
+    properties:
+      status:
+        type: integer
+        description: "Code de statut HTTP"
+        example: 400
+      message:
+        type: string
+        description: "Message d'erreur descriptif"
+        example: "Données invalides"
+      error:
+        type: string
+        description: "Type d'erreur"
+        example: "ValidationError"
+    required:
+      - status
+      - message

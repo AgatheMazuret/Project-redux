@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState, AppDispatch } from "../redux/store";
-import { logoutUser } from "../redux/auth-reducer";
+import { logoutUser, selectAuthLoading } from "../redux/auth-reducer";
 import { authActions } from "../redux/auth-actions";
 
 const UserHomePage = () => {
@@ -25,6 +25,7 @@ const UserHomePage = () => {
   const navigate = useNavigate();
   // Vérifie si l'utilisateur est connecté
   const isLoggedIn = useSelector((state: RootState) => state.auth.isLoggedIn);
+  const loading = useSelector(selectAuthLoading);
 
   // Redirige vers la page de connexion si l'utilisateur n'est pas connecté, sinon récupère le profil
   useEffect(() => {
@@ -34,14 +35,6 @@ const UserHomePage = () => {
       dispatch(authActions.fetchUserProfile());
     }
   }, [isLoggedIn, navigate, dispatch]);
-
-  // Met à jour les champs d'édition lors du passage en mode édition
-  useEffect(() => {
-    if (isEditing) {
-      setEditFirstName(firstName);
-      setEditLastName(lastName);
-    }
-  }, [isEditing, firstName, lastName]);
 
   // Déconnecte l'utilisateur et redirige
   const handleSignOut = () => {
@@ -126,6 +119,14 @@ const UserHomePage = () => {
             <br />
             {firstName} {lastName}!
           </h1>
+          {loading && (
+            <div
+              className="loader"
+              style={{ textAlign: "center", margin: "1em 0" }}
+            >
+              Chargement...
+            </div>
+          )}
           {isEditing ? (
             // Formulaire d'édition du nom et prénom utilisateur
             <form onSubmit={handleSubmit} className="edit-form">
@@ -157,14 +158,59 @@ const UserHomePage = () => {
             </form>
           ) : (
             // Affiche le bouton pour passer en mode édition
-            <button className="edit-button" onClick={() => setIsEditing(true)}>
+            <button
+              type="button"
+              className="edit-button"
+              onClick={() => {
+                setIsEditing(true);
+                setEditFirstName(firstName);
+                setEditLastName(lastName);
+              }}
+            >
               Edit Name
             </button>
           )}
         </div>
 
         <h2 className="sr-only">Accounts</h2>
+
+        <section className="account">
+          <div className="account-content-wrapper">
+            <h3 className="account-title">Argent Bank Checking (x8349)</h3>
+            <p className="account-amount">$2,082.79</p>
+            <p className="account-amount-description">Available Balance</p>
+          </div>
+          <div className="account-content-wrapper cta">
+            <button className="transaction-button">View transactions</button>
+          </div>
+        </section>
+
+        <section className="account">
+          <div className="account-content-wrapper">
+            <h3 className="account-title">Argent Bank Savings (x6712)</h3>
+            <p className="account-amount">$10,928.42</p>
+            <p className="account-amount-description">Available Balance</p>
+          </div>
+          <div className="account-content-wrapper cta">
+            <button className="transaction-button">View transactions</button>
+          </div>
+        </section>
+
+        <section className="account">
+          <div className="account-content-wrapper">
+            <h3 className="account-title">Argent Bank Credit Card (x8349)</h3>
+            <p className="account-amount">$184.30</p>
+            <p className="account-amount-description">Current Balance</p>
+          </div>
+          <div className="account-content-wrapper cta">
+            <button className="transaction-button">View transactions</button>
+          </div>
+        </section>
       </main>
+
+      <footer className="footer">
+        <p className="footer-text">Copyright 2020 Argent Bank</p>
+      </footer>
     </div>
   );
 };
